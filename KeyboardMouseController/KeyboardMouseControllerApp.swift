@@ -10,23 +10,12 @@ import SwiftData
 
 @main
 struct KeyboardMouseControllerApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+//            ContentView() -> 설정 창은 나중에 구현할 것이기 때문에 지금을 필요 없음
+            Text("Keyboard Control Running in Background")
+                .frame(width: 200, height: 100)
         }
-        .modelContainer(sharedModelContainer)
     }
 }
