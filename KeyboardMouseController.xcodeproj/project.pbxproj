@@ -6,6 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		E7A52AFF2EA60390006F58FC /* Accessibility.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7A52AFE2EA60390006F58FC /* Accessibility.framework */; settings = {ATTRIBUTES = (Required, ); }; };
+		E7A52B102EA60456006F58FC /* Accessibility.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7A52AFE2EA60390006F58FC /* Accessibility.framework */; };
+		E7A52B112EA60462006F58FC /* Accessibility.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7A52AFE2EA60390006F58FC /* Accessibility.framework */; };
+		E7A52B142EA6465C006F58FC /* SystemPackage in Frameworks */ = {isa = PBXBuildFile; productRef = E7A52B132EA6465C006F58FC /* SystemPackage */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		E73090742EA107D50030FAE3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +34,7 @@
 		E73090642EA107D30030FAE3 /* KeyboardMouseController.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = KeyboardMouseController.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E73090732EA107D50030FAE3 /* KeyboardMouseControllerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyboardMouseControllerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E730907D2EA107D50030FAE3 /* KeyboardMouseControllerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KeyboardMouseControllerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E7A52AFE2EA60390006F58FC /* Accessibility.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accessibility.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Accessibility.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -52,6 +60,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E7A52B142EA6465C006F58FC /* SystemPackage in Frameworks */,
+				E7A52AFF2EA60390006F58FC /* Accessibility.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E7A52B102EA60456006F58FC /* Accessibility.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -66,6 +77,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E7A52B112EA60462006F58FC /* Accessibility.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +90,7 @@
 				E73090662EA107D30030FAE3 /* KeyboardMouseController */,
 				E73090762EA107D50030FAE3 /* KeyboardMouseControllerTests */,
 				E73090802EA107D50030FAE3 /* KeyboardMouseControllerUITests */,
+				E7A52AFD2EA60390006F58FC /* Frameworks */,
 				E73090652EA107D30030FAE3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +103,14 @@
 				E730907D2EA107D50030FAE3 /* KeyboardMouseControllerUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E7A52AFD2EA60390006F58FC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E7A52AFE2EA60390006F58FC /* Accessibility.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,6 +133,7 @@
 			);
 			name = KeyboardMouseController;
 			packageProductDependencies = (
+				E7A52B132EA6465C006F58FC /* SystemPackage */,
 			);
 			productName = KeyboardMouseController;
 			productReference = E73090642EA107D30030FAE3 /* KeyboardMouseController.app */;
@@ -195,6 +217,9 @@
 			);
 			mainGroup = E730905B2EA107D30030FAE3;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				E7A52B122EA6465C006F58FC /* XCRemoteSwiftPackageReference "swift-system" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = E73090652EA107D30030FAE3 /* Products */;
 			projectDirPath = "";
@@ -393,10 +418,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5FR7LKVU5L;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -437,10 +461,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5FR7LKVU5L;
-				ENABLE_APP_SANDBOX = YES;
+				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
@@ -615,6 +638,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E7A52B122EA6465C006F58FC /* XCRemoteSwiftPackageReference "swift-system" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-system.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.6.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E7A52B132EA6465C006F58FC /* SystemPackage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E7A52B122EA6465C006F58FC /* XCRemoteSwiftPackageReference "swift-system" */;
+			productName = SystemPackage;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = E730905C2EA107D30030FAE3 /* Project object */;
 }
