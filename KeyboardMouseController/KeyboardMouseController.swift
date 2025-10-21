@@ -29,7 +29,7 @@ class KeyboardMouseController {
             if !isTrusted {
                 print("접근성 권한이 필요합니다. 설정에서 앱을 허용해 주세요")
                 
-                // 권한 요청 UI 출력
+                // 권한 요청 UI 출력 -> 해결
                 
                 // 모니터링 중단, 사용자가 설정 변경 후 앱을 재시작해야 기능 활성화됨
                 return
