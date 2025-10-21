@@ -22,11 +22,20 @@
 
 ## 1-1. 문제 정의
  키보드를 많이 사용하고 컴퓨터에 능숙한 사람들은 대부분 단축키를 적극적으로 활용한다. 하지만 단축키를 아무리 잘 사용한다고 하더라도 마우스를 사용해 조작하는 것이 더 빠른 경우가 있다. 
+ 
  이 때 마우스를 사용하는 것은 더 편하기 때문이 아니라 더 빠르기 때문이다. 키보드에서 손을 떼고 마우스로 손을 이동시키는 번거로움을 감수하는 것이다. 이러한 불필요한 동작을 줄이기 위해 해당 어플리케이션을 고안하게 되었다. 
 ## 1-2. 유사 서비스
 ### 1-2-1. Window
+<img width="885" height="593" alt="windows_keyboardmouse" src="https://github.com/user-attachments/assets/1b860c2b-3a96-4154-bfb3-4c279d8eb677" />
+- 주요 기능
+-   마우스 포인터 이동
+-   마우스 버튼 클릭
 
 ### 1-2-2. macOS
+<img width="800" height="359" alt="macOS_keyboardmouse" src="https://github.com/user-attachments/assets/42e5b386-deba-41f4-b5d1-7321cb8bf34c" />
+- 주요 기능
+-   마우스 포인터 이동
+-   마우스 버튼 클릭
 
 ----
 
