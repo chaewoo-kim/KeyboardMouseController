@@ -27,12 +27,14 @@
 ## 1-2. 유사 서비스
 ### 1-2-1. Window
 <img width="885" height="593" alt="windows_keyboardmouse" src="https://github.com/user-attachments/assets/1b860c2b-3a96-4154-bfb3-4c279d8eb677" />
+
 - 주요 기능
   - 마우스 포인터 이동
   - 마우스 버튼 클릭
 
 ### 1-2-2. macOS
 <img width="800" height="359" alt="macOS_keyboardmouse" src="https://github.com/user-attachments/assets/42e5b386-deba-41f4-b5d1-7321cb8bf34c" />
+
 - 주요 기능
   - 마우스 포인터 이동
   - 마우스 버튼 클릭
