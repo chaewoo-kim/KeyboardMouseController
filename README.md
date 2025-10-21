@@ -28,22 +28,38 @@
 ### 1-2-1. Window
 <img width="885" height="593" alt="windows_keyboardmouse" src="https://github.com/user-attachments/assets/1b860c2b-3a96-4154-bfb3-4c279d8eb677" />
 - 주요 기능
--   마우스 포인터 이동
--   마우스 버튼 클릭
+  - 마우스 포인터 이동
+  - 마우스 버튼 클릭
 
 ### 1-2-2. macOS
 <img width="800" height="359" alt="macOS_keyboardmouse" src="https://github.com/user-attachments/assets/42e5b386-deba-41f4-b5d1-7321cb8bf34c" />
 - 주요 기능
--   마우스 포인터 이동
--   마우스 버튼 클릭
+  - 마우스 포인터 이동
+  - 마우스 버튼 클릭
 
 ----
 
 # 2. 프로젝트 주요 기능
-
+## 2-1. 단축키 설정
+- 마우스 컨트롤 상태 ON/OFF 키 설정
+- 좌클릭, 우클릭, 스크롤, 드래그 키 설정
+- 마우스 포인터 상하좌우 이동 단축키 설정
+## 2-2. 앱 설정
+- 제어 센터에서 가리기/보이기 설정
+- 앱 사용/사용중지 설정
+- 손쉬운 사용 권한 설정
+## 2-3. 마우스 설정
+- 마우스 포인터 이동 속도 설정
+## 2-4. 마우스 조작
+- 좌클릭, 우클릭, 스크롤, 드래그
+- 마우스 포인터 이동
 ----
 
 # 3. 기술 스택
+## Language
+![Swift](https://img.shields.io/badge/Swift-FA7343?style=for-the-badge&logo=swift&logoColor=white)
+## IDE
+![Xcode](https://img.shields.io/badge/Xcode-1572B6?style=for-the-badge&logo=xcode&logoColor=white)
 
 ----
 
