@@ -9,6 +9,7 @@ import ApplicationServices
 import Accessibility
 
 // 2. 키보드 이벤트 발생 시 호출될 콜백 함수 (static으로 선언)
+// 4가지 방향의 키의 활성 상태를 바꾸는 역할
 func handleEvent(
     proxy: CGEventTapProxy, // 이벤트가 발생하는 이벤트 탭(Event Tap) 자체를 나타내는 불투명한 포인터. 이벤트 시스템에서 내부적으로 사용됩니다.
     type: CGEventType, // 발생한 이벤트의 유형을 나타내는 열거형(Enum). ex) 마우스 다운, 스크롤 등
@@ -24,9 +25,21 @@ func handleEvent(
     // 키보드 입력을 확인하고 마우스 이벤트로 변환하는 로직 구현
     // 이벤트 유형이 키가 눌린 것인지 떼어진 것인지 확인
     if type == .keyDown { // 이후에 keyDown일 때와 keyUp일 때를 분류해서 로직 짜야 함
+        // refcon을 사용해 keyboardmousecontroller에 접근
+        guard let refcon = refcon else {
+            return Unmanaged.passRetained(event)
+        }
+        let controller = Unmanaged<KeyboardMouseController>.fromOpaque(refcon).takeUnretainedValue()
+        
+        // 키보드 이벤트만을 처리
+        guard type == .keyDown || type == .keyUp else {
+            return Unmanaged.passRetained(event)
+        }
         
         // 해당 키의 고유번호인 keyCode 받아오기
         let keyCode = Int(event.getIntegerValueField(.keyboardEventKeycode))
+        // 이벤트 타입이 'keyDown'이면 isPressed는 true, 'keyUp'이면 false
+        var isPressed = (type == .keyDown)
             
         // 콘솔에 어떤 키가 눌렸는지 떼 졌는지와 해당 키 코드 출력
         print("Key event: \(type), keyCode: \(keyCode)")
@@ -40,25 +53,25 @@ func handleEvent(
         // 가져올 때는 NSEvent로 값을 가져와야 함. CGEvent는 키보드 이벤트이기 때문에 마우스 커서의 현재 위치를 가져올 수 없음
         // NSEvent와 CGEvent는 좌표(0,0) 시작점이 좌상단, 좌하단으로 다르기 때문에 값을 옮길 때 고려해야 함\
         // 0.1 현재 마우스 포인터 위치. 기준 좌상단(0,0)
-        let nsPosition = NSEvent.mouseLocation
+//        let nsPosition = NSEvent.mouseLocation
         
         // 0.2 현재 화면 높이 가져와 Core Graphics 좌표계로 변환
         // 현재 화면
-        guard let mainScreen = NSScreen.main else {
-            return Unmanaged.passRetained(event) // 메인 화면 못 가져오면 이벤트 통과
-        }
-        // 현재 화면의 높이
-        let screenHeight = mainScreen.frame.height
-        
-        // 현재 마우스 포인터 위치를 NSEvent 기준에서 CGEvent 기준으로 변경해 저장
-        var cgPosition = CGPoint(
-            x: nsPosition.x,
-            y: screenHeight-nsPosition.y
-        )
-        print("현재 위치: ", cgPosition)
-        
-        // 일단 설정한 마우스 속도. 나중에 시간 비례로 고쳐야 함
-        let moveAmount: CGFloat = 20.0 // 20px씩 이동
+//        guard let mainScreen = NSScreen.main else {
+//            return Unmanaged.passRetained(event) // 메인 화면 못 가져오면 이벤트 통과
+//        }
+//        // 현재 화면의 높이
+//        let screenHeight = mainScreen.frame.height
+//        
+//        // 현재 마우스 포인터 위치를 NSEvent 기준에서 CGEvent 기준으로 변경해 저장
+//        var cgPosition = CGPoint(
+//            x: nsPosition.x,
+//            y: screenHeight-nsPosition.y
+//        )
+//        print("현재 위치: ", cgPosition)
+//        
+//        // 일단 설정한 마우스 속도. 나중에 시간 비례로 고쳐야 함
+//        let moveAmount: CGFloat = 20.0 // 20px씩 이동
         
         // 시간 비례로 마우스 포인터 이동 속도 조절
         // 상하좌우 이동 현황을 Boolean으로 선언
@@ -71,24 +84,24 @@ func handleEvent(
         switch keyCode {
         case 91: // 숫자패드 8
             print("위로 이동")
-            cgPosition.y -= moveAmount
+            controller.isMovingUp = isPressed
         case 87: // 숫자패드 5
             print("아래로 이동")
-            cgPosition.y += moveAmount
+            controller.isMovingDown = isPressed
         case 86:
             print("좌로 이동")
-            cgPosition.x -= moveAmount
+            controller.isMovingLeft = isPressed
         case 88:
             print("우로 이동")
-            cgPosition.x += moveAmount
+            controller.isMovingRight = isPressed
         default:
             print("필요한 값 아님")
             return Unmanaged.passRetained(event)
         }
         
         // 수정된 좌표 기준으로 마우스 포인터 위치 재설정
-        CGWarpMouseCursorPosition(cgPosition)
-        print("재설정 위치: ", cgPosition)
+//        CGWarpMouseCursorPosition(cgPosition)
+//        print("재설정 위치: ", cgPosition)
         
         // 2-2. 상하/좌우: 마우스 포인터 이동 정지
             // 2-2-3. 하나의 키가 들어와 있는 도중에 다른 키가 눌렸을 때 어떻게 반응하는지 확인해 봐야 함
@@ -99,9 +112,9 @@ func handleEvent(
         return nil;
     }
     // 입력 키의 타입이 keyUp일 때
-    if type == .keyUp {}
-    
-    print("다른 키의 이벤트 통과")
+//    if type == .keyUp {}
+//    
+//    print("다른 키의 이벤트 통과")
     return Unmanaged.passRetained(event) // 이벤트를 시스템으로 전달할 때
 }
 
@@ -111,6 +124,20 @@ class KeyboardMouseController {
     // 이벤트 탭 참조를 저장하는 변수
     // 재시동, 삭제 등에 사용
     private var eventTap: CFMachPort?
+    
+    // 마우스 위치 주기적으로 업데이트하는 Timer 객체
+    private var movementTimer: Timer?
+    
+    // 마우스 이동 속도
+    var speed: CGFloat = 400.0
+    
+    // 현재 이동 방향 상태 저장하는 변수들
+    // handleEvent 함수가 이 값들을 변경
+    // updateMousePosition 함수가 이 값들을 읽음
+    var isMovingUp = false
+    var isMovingDown = false
+    var isMovingRight = false
+    var isMovingLeft = false
     
     // 1. 시스템 이벤트 탭을 시작하는 함수
     func startMonitoring() {
@@ -141,6 +168,8 @@ class KeyboardMouseController {
                 
                 // 이벤트 탭 확인
                 self.startEventTap()
+                // 마우스 이동 타이머
+                self.startMovementTimer()
             }
         }
         
@@ -149,14 +178,28 @@ class KeyboardMouseController {
         // ... (이벤트 탭 생성 및 CFRunLoop에 추가하는 코드)
     }
     
+    // 탭 비활성화
+    func stopEventTap() {
+        // 1. 타이머 무효화해 더 이상 실행되지 않게 함
+        movementTimer?.invalidate()
+        movementTimer = nil // 메모리에서 해제
+        
+        // 2. 이벤트 탭 비활성화, 시스템에서 제거
+        if let tap = eventTap {
+            CGEvent.tapEnable(tap: tap, enable: false)
+            eventTap = nil // 메모리에서 해제
+        }
+        
+        print("이벤트 감지를 중지했습니다.")
+    }
+    
     //3. 이벤트 감지하는 탭 생성
     func startEventTap() {
         // CGEventTapCreate 로직 구현
         
         // 1. 감시할 이벤트 종류 정의: 상수
         let eventMask = (1 << CGEventType.keyDown.rawValue) |   // keyDown 일 때 그 키의 고유값을 비트연산 해서 고유값 생성
-                        (1 << CGEventType.keyUp.rawValue) | // keyUp일 때 그 키의 고유값을 비트연산 해서 고유값 생성
-                        (1 << CGEventType.flagsChanged.rawValue) // flagsChanged일 때(shift 같은 수정 키) 그 키의 고유값을 비트연산 해서 고유값 생성
+                        (1 << CGEventType.keyUp.rawValue) // keyUp일 때 그 키의 고유값을 비트연산 해서 고유값 생성
         
         // 2. 콜백 함수에 클래스 인스턴스 전달 준비
         // handleEvent는 static이기 때문에 인스턴스를 가리키는 주소값인 self를 보내줘야 함
@@ -187,5 +230,64 @@ class KeyboardMouseController {
         
         print("Event Tap started successfully")
         
+    }
+    
+    // 마우스 위치 업데이트 위한 타이머
+    private func startMovementTimer() {
+        // 간격은 1초에 60번 (60프레임)
+        let timerInterval = 1.0 / 60.0
+        
+        let newTimer = Timer(timeInterval: timerInterval, repeats: true) { [weak self] _ in
+            self?.updateMousePosition(interval: timerInterval)
+        }
+        
+        RunLoop.main.add(newTimer, forMode: .default)
+        
+        movementTimer = newTimer
+        
+        print("마우스 이동 타이머 시작")
+        
+    }
+    
+    @objc private func updateMousePosition(interval: TimeInterval) {
+        // 방향 벡터 계산
+        // 현재 눌린 키의 상태를 바탕으로 이동 방향 결정
+        var dx: CGFloat = 0 // x축 방향
+        var dy: CGFloat = 0 // y축 방향
+        
+        if isMovingUp { dy += 1 }
+        if isMovingDown { dy -= 1 }
+        if isMovingRight { dx += 1 }
+        if isMovingLeft { dx -= 1 }
+        
+        // 움직임이 없으면 계산 줄이기 위해 즉시 종료
+        if dx == 0 && dy == 0 {
+            return
+        }
+        
+        // 대각선 이동 속도 보정
+        if dx != 0 && dy != 0 {
+            let magnitude = sqrt(dx*dx + dy*dy) // 벡터의 크기 계산
+            dx /= magnitude // x, y 요소로 나누어 길이가 1인 단위 벡터 생성
+            dy /= magnitude
+        }
+        
+        // 이번 프레임에서 이동할 거리 계산
+        let distance = speed * CGFloat(interval)
+        
+        // 좌표계 변환 및 새 위치 계산
+        let nsPosition = NSEvent.mouseLocation
+        guard let mainScreen = NSScreen.main else { return }
+        let screenHeight = mainScreen.frame.height
+        
+        // CG와 NS는 다르기 때문에 변환. CG는 좌하단이 (0,0) NS는 좌상단이 (0,0)
+        var cgPosition = CGPoint(x: nsPosition.x, y: screenHeight - nsPosition.y)
+        
+        // 최종 목표 위치 계산
+        cgPosition.x += dx * distance
+        cgPosition.y += dy * distance
+        
+        // 최종 마우스 포인터 이동
+        CGWarpMouseCursorPosition(cgPosition)
     }
 }
