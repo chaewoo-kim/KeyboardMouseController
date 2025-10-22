@@ -24,7 +24,6 @@ func handleEvent(
     
     // 키보드 입력을 확인하고 마우스 이벤트로 변환하는 로직 구현
     // 이벤트 유형이 키가 눌린 것인지 떼어진 것인지 확인
-    if type == .keyDown { // 이후에 keyDown일 때와 keyUp일 때를 분류해서 로직 짜야 함
         // refcon을 사용해 keyboardmousecontroller에 접근
         guard let refcon = refcon else {
             return Unmanaged.passRetained(event)
@@ -39,7 +38,7 @@ func handleEvent(
         // 해당 키의 고유번호인 keyCode 받아오기
         let keyCode = Int(event.getIntegerValueField(.keyboardEventKeycode))
         // 이벤트 타입이 'keyDown'이면 isPressed는 true, 'keyUp'이면 false
-        var isPressed = (type == .keyDown)
+        let isPressed = (type == .keyDown)
             
         // 콘솔에 어떤 키가 눌렸는지 떼 졌는지와 해당 키 코드 출력
         print("Key event: \(type), keyCode: \(keyCode)")
@@ -53,25 +52,6 @@ func handleEvent(
         // 가져올 때는 NSEvent로 값을 가져와야 함. CGEvent는 키보드 이벤트이기 때문에 마우스 커서의 현재 위치를 가져올 수 없음
         // NSEvent와 CGEvent는 좌표(0,0) 시작점이 좌상단, 좌하단으로 다르기 때문에 값을 옮길 때 고려해야 함\
         // 0.1 현재 마우스 포인터 위치. 기준 좌상단(0,0)
-//        let nsPosition = NSEvent.mouseLocation
-        
-        // 0.2 현재 화면 높이 가져와 Core Graphics 좌표계로 변환
-        // 현재 화면
-//        guard let mainScreen = NSScreen.main else {
-//            return Unmanaged.passRetained(event) // 메인 화면 못 가져오면 이벤트 통과
-//        }
-//        // 현재 화면의 높이
-//        let screenHeight = mainScreen.frame.height
-//        
-//        // 현재 마우스 포인터 위치를 NSEvent 기준에서 CGEvent 기준으로 변경해 저장
-//        var cgPosition = CGPoint(
-//            x: nsPosition.x,
-//            y: screenHeight-nsPosition.y
-//        )
-//        print("현재 위치: ", cgPosition)
-//        
-//        // 일단 설정한 마우스 속도. 나중에 시간 비례로 고쳐야 함
-//        let moveAmount: CGFloat = 20.0 // 20px씩 이동
         
         // 시간 비례로 마우스 포인터 이동 속도 조절
         // 상하좌우 이동 현황을 Boolean으로 선언
@@ -90,7 +70,9 @@ func handleEvent(
             controller.isMovingDown = isPressed
         case 86:
             print("좌로 이동")
+            print(isPressed)
             controller.isMovingLeft = isPressed
+            print(controller.isMovingLeft)
         case 88:
             print("우로 이동")
             controller.isMovingRight = isPressed
@@ -111,12 +93,6 @@ func handleEvent(
         // 이벤트를 시스템에 전달하지 않고 막을 때, 즉 해당 keyCode가 앱에서 원하는 값일 때
         return nil;
     }
-    // 입력 키의 타입이 keyUp일 때
-//    if type == .keyUp {}
-//    
-//    print("다른 키의 이벤트 통과")
-    return Unmanaged.passRetained(event) // 이벤트를 시스템으로 전달할 때
-}
 
 
 class KeyboardMouseController {
@@ -255,8 +231,8 @@ class KeyboardMouseController {
         var dx: CGFloat = 0 // x축 방향
         var dy: CGFloat = 0 // y축 방향
         
-        if isMovingUp { dy += 1 }
-        if isMovingDown { dy -= 1 }
+        if isMovingUp { dy -= 1 }
+        if isMovingDown { dy += 1 }
         if isMovingRight { dx += 1 }
         if isMovingLeft { dx -= 1 }
         
