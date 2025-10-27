@@ -65,7 +65,7 @@
 ----
 
 # 4. 요구사항 명세서
-[요구사항 명세서.pdf](https://github.com/user-attachments/files/23012182/default.pdf)
+[키보드마우스 컨트롤러 요구사항 명세서 - 시트1.pdf](https://github.com/user-attachments/files/23159131/-.1.pdf)
 
 ----
 
