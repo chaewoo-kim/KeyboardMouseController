@@ -70,7 +70,7 @@
 ----
 
 # 5. 사용자 유스케이스
-<img width="721" height="1041" alt="사용자 유스케이스 drawio" src="https://github.com/user-attachments/assets/6241a977-f8b0-4a84-a962-097f832b6a99" />
+<img width="721" height="1041" alt="유스케이스 drawio" src="https://github.com/user-attachments/assets/29d3ae33-17b9-4e7a-8b0d-b754d661b5d3" />
 
 ----
 
