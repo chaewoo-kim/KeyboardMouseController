@@ -5,8 +5,21 @@
 
 import Cocoa
 import CoreGraphics
+import Combine
 import ApplicationServices
 import Accessibility
+
+enum KeyAction: Int {
+    case moveUp = 91
+    case moveDown = 87
+    case moveLeft = 86
+    case moveRight = 88
+    
+    case leftClick = 89
+    case rightClick = 92
+    
+    case scrollToggle = 69
+}
 
 // 2. 키보드 이벤트 발생 시 호출될 콜백 함수 (static으로 선언)
 // 4가지 방향의 키의 활성 상태를 바꾸는 역할
@@ -39,15 +52,20 @@ func handleEvent(
         let keyCode = Int(event.getIntegerValueField(.keyboardEventKeycode))
         // 이벤트 타입이 'keyDown'이면 isPressed는 true, 'keyUp'이면 false
         let isPressed = (type == .keyDown)
+    
+        guard let action = KeyAction(rawValue: keyCode) else {
+            print("정의되지 않은 키 : \(keyCode)")
+            return Unmanaged.passRetained(event)
+        }
             
         // 콘솔에 어떤 키가 눌렸는지 떼 졌는지와 해당 키 코드 출력
         print("Key event: \(type), keyCode: \(keyCode)")
             
         // 마우스 포인터 움직이는 로직 여기다가 구현
         // 기본적으로 할당되는 단축키는 숫자 패드
-        // 상: 8, 하: 5, 좌: 4, 우: 6, 스크롤: +, 드래그: Enter
+        // 상: 8, 하: 5, 좌: 4, 우: 6, 스크롤: +, 드래그: Enter, 좌클릭: 7, 우클릭: 9
         // 사용할 keyCode
-            // 상: 91, 하: 87, 좌: 86, 우: 88, 스크롤: 69, 드래그: 76
+            // 상: 91, 하: 87, 좌: 86, 우: 88, 스크롤: 69, 드래그: 76, 좌클릭: 89, 우클릭: 92
         // 0. 현재 마우스 포인터의 위치 가져와서 저장해야 함
         // 가져올 때는 NSEvent로 값을 가져와야 함. CGEvent는 키보드 이벤트이기 때문에 마우스 커서의 현재 위치를 가져올 수 없음
         // NSEvent와 CGEvent는 좌표(0,0) 시작점이 좌상단, 좌하단으로 다르기 때문에 값을 옮길 때 고려해야 함\
@@ -60,42 +78,52 @@ func handleEvent(
         
         // 1. switch 문으로 해당 코드가 어떤 값인지 확인
         // 2. 코드에 따라 작업 실행
-        // 2-1. 상/하/좌/우: 해당 방향으로 마우스 포인터 이동 -> 일단 이것만 구현해보자
-        switch keyCode {
-        case 91: // 숫자패드 8
-            print("위로 이동")
-            controller.isMovingUp = isPressed
-        case 87: // 숫자패드 5
-            print("아래로 이동")
-            controller.isMovingDown = isPressed
-        case 86:
-            print("좌로 이동")
-            print(isPressed)
-            controller.isMovingLeft = isPressed
-            print(controller.isMovingLeft)
-        case 88:
-            print("우로 이동")
-            controller.isMovingRight = isPressed
-        default:
-            print("필요한 값 아님")
-            return Unmanaged.passRetained(event)
+        // 2-1. 상/하/좌/우: 해당 방향으로 마우스 포인터 이동
+        switch action {
+        case .moveLeft, .moveRight, .moveUp, .moveDown:
+            controller.handleMovement(keyCode: keyCode, isPressed: isPressed)
+        case .leftClick:
+            if (type == .keyDown) {
+                print("좌클릭")
+                controller.performLeftClick(isPressed: isPressed)
+            }
+        case .rightClick:
+            if (type == .keyDown) {
+                print("우클릭")
+                controller.performRightClick(isPressed: isPressed)
+            }
+        case .scrollToggle:
+            controller.performScrolling(isPressed: isPressed)
+            break
         }
-        
-        // 수정된 좌표 기준으로 마우스 포인터 위치 재설정
-//        CGWarpMouseCursorPosition(cgPosition)
-//        print("재설정 위치: ", cgPosition)
-        
-        // 2-2. 상하/좌우: 마우스 포인터 이동 정지
-            // 2-2-3. 하나의 키가 들어와 있는 도중에 다른 키가 눌렸을 때 어떻게 반응하는지 확인해 봐야 함
-        // 2-3. 상+좌우/하+좌우: 해당 대각 방향으로 마우스 포인터 이동. 정방향 이동보다 속도가 루트 2배 빨라야 할듯
-        
         
         // 이벤트를 시스템에 전달하지 않고 막을 때, 즉 해당 keyCode가 앱에서 원하는 값일 때
         return nil;
     }
 
 
-class KeyboardMouseController {
+class KeyboardMouseController: ObservableObject {
+    
+    @Published var isEnabled: Bool = false {
+        didSet {
+            if isEnabled {
+                DispatchQueue.main.async {
+                    // 권한 확인 여부
+                    let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as NSString: true]
+                    
+                    // 권한 확인 변수에
+                    if AXIsProcessTrustedWithOptions(options) {
+                        self.startMonitoring()
+                    } else {
+                        print("접근성 권한 없음")
+                        self.isEnabled = false
+                    }
+                }
+            } else {
+                self.stopEventTap()
+            }
+        }
+    }
     
     // 이벤트 탭 참조를 저장하는 변수
     // 재시동, 삭제 등에 사용
@@ -104,8 +132,13 @@ class KeyboardMouseController {
     // 마우스 위치 주기적으로 업데이트하는 Timer 객체
     private var movementTimer: Timer?
     
-    // 마우스 이동 속도
-    var speed: CGFloat = 400.0
+    // 마우스 포인터 가속 속도
+    @Published var baseSpeed: CGFloat = 100.0
+    @Published var maxSpeed: CGFloat = 1200.0
+    @Published var acceleration: CGFloat = 2000.0
+    
+    // 현재 마우스 포인터 속도
+    private var currentSpeed: CGFloat = 100.0
     
     // 현재 이동 방향 상태 저장하는 변수들
     // handleEvent 함수가 이 값들을 변경
@@ -114,6 +147,13 @@ class KeyboardMouseController {
     var isMovingDown = false
     var isMovingRight = false
     var isMovingLeft = false
+    
+    var isLeftClick = false
+    var isRightClick = false
+//    var isDrag = false
+    var isScroll = false
+    
+    var scrollSpeed: Int32 = 10
     
     // 1. 시스템 이벤트 탭을 시작하는 함수
     func startMonitoring() {
@@ -145,7 +185,7 @@ class KeyboardMouseController {
                 // 이벤트 탭 확인
                 self.startEventTap()
                 // 마우스 이동 타이머
-                self.startMovementTimer()
+                self.startStateTimer()
             }
         }
         
@@ -208,24 +248,140 @@ class KeyboardMouseController {
         
     }
     
-    // 마우스 위치 업데이트 위한 타이머
-    private func startMovementTimer() {
-        // 간격은 1초에 60번 (60프레임)
-        let timerInterval = 1.0 / 60.0
-        
-        let newTimer = Timer(timeInterval: timerInterval, repeats: true) { [weak self] _ in
-            self?.updateMousePosition(interval: timerInterval)
+    func handleMovement(keyCode: Int, isPressed: Bool) {
+        // 마우스 포인터 이동에 대한 로직
+        switch keyCode {
+        case 91: // 숫자패드 8
+            print("위로 이동")
+            isMovingUp = isPressed
+        case 87: // 숫자패드 5
+            print("아래로 이동")
+            isMovingDown = isPressed
+        case 86:
+            print("좌로 이동")
+            isMovingLeft = isPressed
+        case 88:
+            print("우로 이동")
+            isMovingRight = isPressed
+        default:
+            print("필요한 값 아님")
         }
-        
-        RunLoop.main.add(newTimer, forMode: .default)
-        
-        movementTimer = newTimer
-        
-        print("마우스 이동 타이머 시작")
-        
     }
     
-    @objc private func updateMousePosition(interval: TimeInterval) {
+    func performLeftClick(isPressed: Bool) {
+        // 좌클릭 실행
+        
+        isLeftClick = isPressed
+        
+        // 전역 좌표를 가져와 바로 사용
+        guard let event = CGEvent(source: nil) else { return }
+        let position = event.location
+        
+        // 마우스 왼쪽 버튼 다운 이벤트 생성
+        let mouseDownEvent = CGEvent(
+            mouseEventSource: nil,
+            mouseType: .leftMouseDown,
+            mouseCursorPosition: position,
+            mouseButton: .left
+        )
+        
+        // 마우스 왼쪽 버튼 업 이벤트 생성
+        let mouseUpEvent = CGEvent(
+            mouseEventSource: nil,
+            mouseType: .leftMouseUp,
+            mouseCursorPosition: position,
+            mouseButton: .left
+        )
+        
+        // 생성된 이벤트를 시스템에 게시(post)하여 실행
+        mouseDownEvent?.post(tap: .cgSessionEventTap)
+        mouseUpEvent?.post(tap: .cgSessionEventTap)
+    }
+    
+    func performRightClick(isPressed: Bool) {
+        // 우클릭 실행
+        
+        guard let event = CGEvent(source: nil) else { return }
+        let position = event.location
+        
+        isRightClick = isPressed
+        
+        // 마우스 오른쪽 버튼 다운 이벤트 생성
+        let mouseDownEvent = CGEvent(
+            mouseEventSource: nil,
+            mouseType: .rightMouseDown,
+            mouseCursorPosition: position,
+            mouseButton: .right
+        )
+        
+        // 마우스 오른쪽 버튼 업 이벤트 생성
+        let mouseUpEvent = CGEvent(
+            mouseEventSource: nil,
+            mouseType: .rightMouseUp,
+            mouseCursorPosition: position,
+            mouseButton: .right
+        )
+        
+        // 생성된 이벤트를 시스템에 게시(post)하여 실행
+        mouseDownEvent?.post(tap: .cgSessionEventTap)
+        mouseUpEvent?.post(tap: .cgSessionEventTap)
+    }
+    
+    func performScrolling(isPressed: Bool) {
+        // 스크롤 기능 구현
+        // 스크롤 키와 위 키 또는 아래 키가 같이 눌리면 스크롤 기능
+        isScroll = isPressed
+        print("스크롤 상태: ", isPressed)
+    }
+    
+    // 메인 업데이트 함수
+    @objc private func updateControllerState(interval: TimeInterval) {
+        if isScroll {
+            handleScroll()
+            return
+        }
+        
+        // 스크롤이 아닌 경우 포인터 이동 처리 수행
+        handlePointerMovement(interval: interval)
+    }
+    
+    private func handleScroll() {
+        var scrollDelta: Int32 = 0
+        
+        if isMovingUp == true {
+            scrollDelta = +scrollSpeed
+        } else if isMovingDown == true {
+            scrollDelta = -scrollSpeed
+        }
+        
+        if scrollDelta != 0 {
+            // 스크롤 이벤트 생성
+            let scrollEvent = CGEvent(
+                scrollWheelEvent2Source: nil,
+                units: .pixel,  // .pixel 또는 .line
+                wheelCount: 1,  // 1: 수직 스크롤, 2: 수직+수평
+                wheel1: scrollDelta,    // 수직 스크롤 델타
+                wheel2: 0,  // 수평 스크롤 델타
+                wheel3: 0
+            )
+            
+            // 스크롤 이벤트 시스템에 개시
+            scrollEvent?.post(tap: .cgSessionEventTap)
+            print("스크롤 이벤트 발생")
+        }
+    }
+    
+    private func handlePointerMovement(interval: TimeInterval) {
+        // 방향 키 눌려있는지 확인
+        let isMoving = isMovingUp || isMovingDown || isMovingLeft || isMovingRight
+        
+        // 방향 키 눌려져 있다면 속도 계산 후 반영
+        if isMoving {
+            currentSpeed = min(maxSpeed, currentSpeed + acceleration * CGFloat(interval))
+        } else {
+            currentSpeed = baseSpeed
+        }
+        
         // 방향 벡터 계산
         // 현재 눌린 키의 상태를 바탕으로 이동 방향 결정
         var dx: CGFloat = 0 // x축 방향
@@ -249,21 +405,32 @@ class KeyboardMouseController {
         }
         
         // 이번 프레임에서 이동할 거리 계산
-        let distance = speed * CGFloat(interval)
+        let distance = currentSpeed * CGFloat(interval)
         
-        // 좌표계 변환 및 새 위치 계산
-        let nsPosition = NSEvent.mouseLocation
-        guard let mainScreen = NSScreen.main else { return }
-        let screenHeight = mainScreen.frame.height
-        
-        // CG와 NS는 다르기 때문에 변환. CG는 좌하단이 (0,0) NS는 좌상단이 (0,0)
-        var cgPosition = CGPoint(x: nsPosition.x, y: screenHeight - nsPosition.y)
+        guard let event = CGEvent(source: nil) else { return }
+        var newPosition = event.location
         
         // 최종 목표 위치 계산
-        cgPosition.x += dx * distance
-        cgPosition.y += dy * distance
+        newPosition.x += dx * distance
+        newPosition.y += dy * distance
         
         // 최종 마우스 포인터 이동
-        CGWarpMouseCursorPosition(cgPosition)
+        CGWarpMouseCursorPosition(newPosition)
+        print(newPosition)
+    }
+    
+    private func startStateTimer() {
+        // 간격은 1초에 60번 (60프레임)
+        let timerInterval = 1.0 / 60.0
+        
+        let newTimer = Timer(timeInterval: timerInterval, repeats: true) { [weak self] _ in
+            self?.updateControllerState(interval: timerInterval)
+        }
+        
+        RunLoop.main.add(newTimer, forMode: .default)
+        
+        movementTimer = newTimer
+        
+        print("마우스 이동 타이머 시작")
     }
 }
